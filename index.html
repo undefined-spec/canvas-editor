@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Pratik Discord.JS Canvas </title>
+    <title>Pratik Discord.JS Canvas</title>
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans&family=Inter:wght@400;700&display=swap">
     <style>
         body {
             font-family: 'Roboto', Arial, sans-serif;
@@ -19,7 +19,7 @@
         }
 
         #controls {
-            width: 340px;
+            width: 360px;
             padding: 16px;
             background: #fff;
             border-radius: 12px;
@@ -41,6 +41,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             cursor: grab;
             display: block;
+            outline: none;
         }
 
         label {
@@ -132,7 +133,7 @@
         }
 
         #texts-list {
-            max-height: 380px;
+            max-height: 420px;
             overflow: auto;
             padding-right: 6px;
             margin-top: 10px;
@@ -149,7 +150,6 @@
             }
         }
 
-        /* Yeni credit box stili — ekle bu satırları style bloğuna */
         .credit-box {
             display: flex;
             align-items: center;
@@ -157,7 +157,6 @@
             gap: 12px;
             padding: 12px 14px;
             background: #ffffff;
-            /* kutu rengi */
             border-radius: 10px;
             box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
             border: 1px solid rgba(16, 24, 40, 0.04);
@@ -165,7 +164,6 @@
             margin-top: 8px;
         }
 
-        /* metin alanı içindeki küçük satırlar */
         .credit-box .muted.small {
             margin: 0;
             color: #5f6368;
@@ -173,14 +171,11 @@
             text-align: center;
         }
 
-        /* Shu vurgusu */
         .credit-box .shu {
             color: #1a73e8;
-            /* vurgu rengi, dilediğin renge çevir */
             font-weight: 700;
         }
 
-        /* Discord icon link stili */
         .discord-link {
             display: inline-flex;
             align-items: center;
@@ -200,38 +195,79 @@
         .discord-link svg {
             display: block;
         }
+
+        .section-title {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #3c4043;
+            letter-spacing: .3px;
+        }
+
+        .hr {
+            height: 1px;
+            background: #eceff1;
+            border: 0;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
 <body>
 
-    <div id="controls">
+    <div id="controls" aria-label="Kontrol paneli">
         <h3>Kontroller</h3>
 
         <label>Genişlik (px)</label>
-        <input type="number" id="manual-width" min="50" max="3000" value="800">
+        <input type="number" id="manual-width" min="50" max="3000" value="800" aria-label="Genişlik">
 
         <label>Yükseklik (px)</label>
-        <input type="number" id="manual-height" min="30" max="3000" value="450">
+        <input type="number" id="manual-height" min="30" max="3000" value="450" aria-label="Yükseklik">
 
         <label>Arka Plan Rengi</label>
-        <input type="color" id="bg-color" value="#0f1720">
+        <input type="color" id="bg-color" value="#0f1720" aria-label="Arka plan rengi">
 
-        <label>Arka Plan Fotoğrafı (Opsiyonel)</label>
-        <input type="file" id="bg-image-input" accept="image/*" style="margin-top:6px">
-        <button id="apply-bg-image" class="small-btn grey" style="margin-top:6px">Foto Ekle</button>
-
+        <div class="section-title">Arka Plan Fotoğrafı</div>
+        <div class="row">
+            <input type="file" id="bg-image-input" accept="image/*" aria-label="Arka plan fotoğrafı seç">
+            <button id="apply-bg-image" class="small-btn grey" title="Foto Ekle">Ekle</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+            <select id="bg-fit" class="half" aria-label="Arka plan yerleşimi">
+                <option value="cover">Cover (Taşmadan doldur)</option>
+                <option value="contain">Contain (Sığdır)</option>
+                <option value="stretch">Stretch (Esnet)</option>
+            </select>
+            <div class="half">
+                <label style="margin-top:0">Opaklık</label>
+                <input type="range" id="bg-alpha" min="0" max="1" step="0.05" value="1" aria-label="Arka plan opaklığı">
+            </div>
+        </div>
+        <button id="remove-bg-image" class="small-btn grey" style="margin-top:6px">Foto Kaldır</button>
 
         <div class="top-actions">
-            <button id="apply-dims" class="small-btn">Uygula</button>
+            <button id="apply-dims" class="small-btn">Boyutu Uygula</button>
             <button id="add-text" class="small-btn grey">Metin Ekle</button>
             <button id="undo" class="small-btn grey" disabled>Geri Al</button>
             <button id="redo" class="small-btn grey" disabled>İleri Al</button>
         </div>
 
-        <p class="muted">İlk metin varsayılan siyah, diğerleri koyu tonlarda başlar. Çok satırlı için \\n kullanın.</p>
+        <p class="muted">İlk metin varsayılan <b>siyah</b>, diğerleri koyu tonlarda başlar. Çok satır için
+            <code>\n</code> kullanın.</p>
 
-        <div id="texts-list"></div>
+        <div class="row">
+            <label style="flex:1;margin-top:0">
+                <input type="checkbox" id="text-stroke"> Metin Konturu
+            </label>
+            <label style="flex:1;margin-top:0">
+                <input type="checkbox" id="text-shadow"> Metin Gölgesi
+            </label>
+        </div>
+
+        <div class="hr"></div>
+        <div class="muted">Seçili metin: ok tuşlarıyla taşı, <kbd>Shift</kbd> + ok = 10px. <kbd>Delete</kbd> = sil.
+            <kbd>Ctrl/Cmd</kbd> + <kbd>Z</kbd>/<kbd>Y</kbd>.</div>
+
+        <div id="texts-list" aria-label="Metin listesi"></div>
 
         <h4 style="margin-top:10px">Export (Discord.js)</h4>
         <div class="export-box" id="export-code">// Metinleri ekleyin, düzenleyin ve 'Tümünü Kopyala'ya basın.</div>
@@ -244,9 +280,8 @@
     </div>
 
     <div id="canvas-wrap">
-        <canvas id="canvas" width="800" height="450" role="img" aria-label="Canvas önizleme"></canvas>
+        <canvas id="canvas" width="800" height="450" role="img" aria-label="Canvas önizleme" tabindex="0"></canvas>
 
-        <!-- REPLACE the two <p> lines with this credit box -->
         <div class="credit-box" role="contentinfo" aria-label="Credit and Discord invite">
             <div class="credit-text" style="flex:1">
                 <p class="muted small" style="margin:0; text-align:center">
@@ -256,10 +291,8 @@
                     Bu kod <span class="shu">Shu</span> tarafından hazırlanmıştır.
                 </p>
             </div>
-
-            <a class="discord-link" href="https://discord.gg/2TYqRbZscG" target="_blank"
-                rel="noopener noreferrer" aria-label="Discord sunucusuna katıl" title="Sunucuya katıl">
-                <!-- small Discord SVG (28x28) -->
+            <a class="discord-link" href="https://discord.gg/2TYqRbZscG" target="_blank" rel="noopener noreferrer"
+                aria-label="Discord sunucusuna katıl" title="Sunucuya katıl">
                 <svg width="28" height="28" viewBox="0 0 245 240" xmlns="http://www.w3.org/2000/svg" role="img"
                     aria-hidden="false">
                     <path fill="#5865F2"
@@ -271,10 +304,7 @@
         </div>
     </div>
 
-
     <script>
-        /* ---------- CanvasTextEditor: güncellenmiş, DPR/font/undo/redo/debounce ile ---------- */
-
         class CanvasTextEditor {
             constructor() {
                 // DOM
@@ -293,10 +323,16 @@
                 this.downloadPngBtn = document.getElementById('download-png');
                 this.copyFeedback = document.getElementById('copy-feedback');
 
-                this.bgImage = null; // opsiyonel arka plan resmi
+                // BG resim
                 this.bgImageInput = document.getElementById('bg-image-input');
                 this.applyBgImageBtn = document.getElementById('apply-bg-image');
+                this.removeBgBtn = document.getElementById('remove-bg-image');
+                this.bgFitSel = document.getElementById('bg-fit');
+                this.bgAlpha = document.getElementById('bg-alpha');
 
+                // Metin efektleri
+                this.strokeChk = document.getElementById('text-stroke');
+                this.shadowChk = document.getElementById('text-shadow');
 
                 // State
                 this.texts = [];
@@ -307,50 +343,56 @@
                 this.dragTarget = null;
                 this.dragOffsetX = 0;
                 this.dragOffsetY = 0;
+                this.selectedIndex = null;
                 this.bgColor = this.bgColorInput.value || '#0f1720';
                 this.maxHistory = 60;
+
+                this.bgImage = null;
+                this._bgObjectUrl = null;
+                this.bgFit = 'cover';    // cover | contain | stretch
+                this.bgOpacity = 1;      // 0..1
+
+                this.textStroke = false;
+                this.textShadow = false;
 
                 // helpers
                 this.debouncedSave = this.debounce(() => this.saveHistory(), 650);
 
                 // init
                 this.initEvents();
-                this.addInitialTexts(); // adds only ONE initial text now
-                this.saveHistory(); // initial snapshot
+                this.addInitialTexts();
+                this.saveHistory();
                 this.waitForFontsThenRender();
             }
 
             /* ---------- helpers ---------- */
             debounce(fn, wait = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
-
+            cssSize() {
+                // Koordinat sistemi CSS pikselinde (setTransform ile ölçekleniyor)
+                const w = this.canvas.clientWidth || Number(this.manualWidth.value) || 800;
+                const h = this.canvas.clientHeight || Number(this.manualHeight.value) || 450;
+                return { w, h };
+            }
             defaultDarkColor(idx) {
-                if (idx === 0) return '#000000';
                 const shades = ['#111111', '#222222', '#2b2b2b', '#333333', '#3c3c3c', '#444444', '#4d4d4d'];
-                return shades[(idx - 1) % shades.length];
+                return shades[(Math.max(0, idx - 1)) % shades.length];
             }
-
-            escapeForCode(s) {
-                return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-            }
+            escapeForCode(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n'); }
 
             /* ---------- DPR-aware resize ---------- */
             resizeCanvasForDPR(cssW, cssH) {
                 const dpr = window.devicePixelRatio || 1;
-                // set CSS size
                 this.canvas.style.width = cssW + 'px';
                 this.canvas.style.height = cssH + 'px';
-                // backing store
                 this.canvas.width = Math.max(1, Math.round(cssW * dpr));
                 this.canvas.height = Math.max(1, Math.round(cssH * dpr));
-                // scale so we can use CSS pixel coordinates
-                this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // koordinatlar CSS pikseli
             }
 
-            /* ---------- text bounds / multi-line support ---------- */
+            /* ---------- text bounds / multi-line ---------- */
             getTextBounds(t) {
-                // compute width as max line width; height via lineHeight * lines
                 this.ctx.font = `${t.fontSize}px ${t.fontFamily}`;
-                const lines = (t.text === undefined || t.text === null) ? [''] : String(t.text).split('\n');
+                const lines = (t.text == null) ? [''] : String(t.text).split('\n');
                 const widths = lines.map(line => this.ctx.measureText(line).width || 0);
                 const maxW = widths.length ? Math.max(...widths) : 0;
                 const lineHeight = Math.round(t.fontSize * 1.2);
@@ -358,7 +400,7 @@
                 return { width: maxW, height: h, lineHeight, lines };
             }
 
-            /* ---------- hit test (topmost first) ---------- */
+            /* ---------- hit test ---------- */
             hitTest(mx, my) {
                 for (let i = this.texts.length - 1; i >= 0; i--) {
                     const t = this.texts[i];
@@ -374,39 +416,83 @@
 
             /* ---------- render ---------- */
             updateCanvas() {
-                // clear and background
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                const { w: CW, h: CH } = this.cssSize();
+                this.ctx.clearRect(0, 0, CW, CH);
 
+                // BG
                 if (this.bgImage) {
-                    this.ctx.drawImage(this.bgImage, 0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.save();
+                    this.ctx.globalAlpha = this.bgOpacity;
+
+                    const iw = this.bgImage.width, ih = this.bgImage.height;
+                    let dx = 0, dy = 0, dw = CW, dh = CH;
+                    if (this.bgFit === 'contain' || this.bgFit === 'cover') {
+                        const s = (this.bgFit === 'contain') ? Math.min(CW / iw, CH / ih) : Math.max(CW / iw, CH / ih);
+                        dw = Math.round(iw * s);
+                        dh = Math.round(ih * s);
+                        dx = Math.round((CW - dw) / 2);
+                        dy = Math.round((CH - dh) / 2);
+                    }
+                    // stretch default: dx,dy=0; dw,dh=CW,CH
+                    this.ctx.drawImage(this.bgImage, dx, dy, dw, dh);
+                    this.ctx.restore();
                 } else {
                     this.ctx.fillStyle = this.bgColor || '#0f1720';
-                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.fillRect(0, 0, CW, CH);
                 }
 
-                // tüm metinleri çiz
-                this.texts.forEach(t => {
+                // Metinler
+                this.texts.forEach((t, i) => {
                     this.ctx.font = `${t.fontSize}px ${t.fontFamily}`;
-                    this.ctx.fillStyle = t.color;
                     this.ctx.textAlign = 'center';
                     this.ctx.textBaseline = 'middle';
+
+                    // Shadow
+                    if (this.textShadow) {
+                        this.ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                        this.ctx.shadowBlur = 8;
+                        this.ctx.shadowOffsetY = 2;
+                    }
 
                     const bounds = this.getTextBounds(t);
                     const startY = t.y - bounds.height / 2 + bounds.lineHeight / 2;
 
+                    this.ctx.fillStyle = t.color;
                     bounds.lines.forEach((line, idx) => {
-                        this.ctx.fillText(line, t.x, startY + idx * bounds.lineHeight);
+                        const y = startY + idx * bounds.lineHeight;
+                        this.ctx.fillText(line, t.x, y);
+                        if (this.textStroke) {
+                            this.ctx.lineWidth = Math.max(1, Math.round(t.fontSize * 0.04));
+                            this.ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+                            this.ctx.strokeText(line, t.x, y);
+                        }
                     });
+
+                    if (this.textShadow) {
+                        this.ctx.shadowColor = 'transparent';
+                        this.ctx.shadowBlur = 0;
+                        this.ctx.shadowOffsetY = 0;
+                    }
                 });
 
-                // export kodu tazele
+                // Seçili öğe çerçevesi
+                if (this.selectedIndex != null && this.texts[this.selectedIndex]) {
+                    const t = this.texts[this.selectedIndex];
+                    const b = this.getTextBounds(t);
+                    const left = Math.round(t.x - b.width / 2);
+                    const top = Math.round(t.y - b.height / 2);
+                    this.ctx.save();
+                    this.ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(left, top, Math.max(1, b.width), Math.max(1, b.height));
+                    this.ctx.restore();
+                }
+
                 this.refreshExportCode();
                 this.syncListPositions();
             }
 
-
-
-            /* ---------- UI list render (DOM create, textarea.value kullan) ---------- */
+            /* ---------- UI list render ---------- */
             renderTextList() {
                 this.textsList.innerHTML = '';
                 this.texts.forEach((t, i) => {
@@ -414,7 +500,7 @@
                     div.className = 'text-item';
                     div.dataset.id = t.id;
 
-                    // header with actions
+                    // header
                     const header = document.createElement('div');
                     header.style.display = 'flex';
                     header.style.gap = '12px';
@@ -431,32 +517,29 @@
                     centerBtn.className = 'small-btn grey';
                     centerBtn.textContent = 'Ortala';
                     centerBtn.dataset.action = 'center';
+                    centerBtn.title = 'Merkeze hizala';
                     header.appendChild(centerBtn);
 
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'small-btn';
                     removeBtn.textContent = 'Sil';
                     removeBtn.dataset.action = 'remove';
+                    removeBtn.title = 'Metni sil';
                     header.appendChild(removeBtn);
 
                     div.appendChild(header);
 
-                    // textarea (value)
-                    const lbl = document.createElement('label'); lbl.textContent = 'İçerik:';
-                    div.appendChild(lbl);
-
+                    // textarea
+                    const lbl = document.createElement('label'); lbl.textContent = 'İçerik:'; div.appendChild(lbl);
                     const ta = document.createElement('textarea');
-                    ta.dataset.field = 'text';
-                    ta.rows = 2;
-                    ta.value = t.text;
-                    ta.style.marginTop = '6px';
+                    ta.dataset.field = 'text'; ta.rows = 2; ta.value = t.text; ta.style.marginTop = '6px';
                     div.appendChild(ta);
 
                     // font size + family
                     const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '8px';
                     const fs = document.createElement('input'); fs.className = 'half'; fs.dataset.field = 'fontSize'; fs.type = 'number'; fs.min = 8; fs.max = 400; fs.value = t.fontSize;
                     const ff = document.createElement('select'); ff.className = 'half'; ff.dataset.field = 'fontFamily';
-                    ['Roboto', 'Open Sans', 'Arial', 'Helvetica', 'Times New Roman', 'Courier New'].forEach(opt => {
+                    ['Roboto', 'Open Sans', 'Inter', 'Arial', 'Helvetica', 'Times New Roman', 'Courier New'].forEach(opt => {
                         const o = document.createElement('option'); o.textContent = opt; if (opt === t.fontFamily) o.selected = true; ff.appendChild(o);
                     });
                     row.appendChild(fs); row.appendChild(ff);
@@ -481,7 +564,7 @@
                 });
             }
 
-            /* ---------- sync list inputs with model ---------- */
+            /* ---------- sync positions ---------- */
             syncListPositions() {
                 const items = this.textsList.querySelectorAll('.text-item');
                 items.forEach(item => {
@@ -495,42 +578,67 @@
                 });
             }
 
-            /* ---------- export code generation (safe escape) ---------- */
+            /* ---------- export code ---------- */
             refreshExportCode() {
+                const outW = Number(this.manualWidth.value) || 800;
+                const outH = Number(this.manualHeight.value) || 450;
+
                 const lines = [
                     "// Discord.js Canvas Example (node-canvas)",
-                    "const { createCanvas } = require('canvas');",
-                    `const canvas = createCanvas(${this.canvas.clientWidth || Number(this.manualWidth.value)}, ${this.canvas.clientHeight || Number(this.manualHeight.value)});`,
+                    "const { createCanvas, registerFont, loadImage } = require('canvas');",
+                    `const canvas = createCanvas(${outW}, ${outH});`,
                     "const ctx = canvas.getContext('2d');",
+                    "",
+                    "// İsteğe bağlı: fontlar sistemde yoksa kaydedin",
+                    "// registerFont('./fonts/Roboto-Regular.ttf', { family: 'Roboto' });",
+                    "",
                     `ctx.fillStyle = '${this.bgColor}';`,
-                    `ctx.fillRect(0, 0, ${this.canvas.clientWidth || Number(this.manualWidth.value)}, ${this.canvas.clientHeight || Number(this.manualHeight.value)});`,
+                    `ctx.fillRect(0, 0, ${outW}, ${outH});`,
+                    "",
+                    "// Çok satırlı merkezli çizim helper",
+                    "function drawMultilineCentered(ctx, text, x, y, fontSize, color, stroke=false, shadow=false){",
+                    "  const lines = String(text).split('\\n');",
+                    "  const lineHeight = Math.round(fontSize * 1.2);",
+                    "  const totalH = lines.length * lineHeight;",
+                    "  let cy = y - totalH/2 + lineHeight/2;",
+                    "  ctx.textAlign = 'center';",
+                    "  ctx.textBaseline = 'middle';",
+                    "  ctx.fillStyle = color;",
+                    "  if (shadow){ ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2; }",
+                    "  for(const ln of lines){",
+                    "    ctx.fillText(ln, x, cy);",
+                    "    if (stroke){ ctx.lineWidth=Math.max(1, Math.round(fontSize*0.04)); ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.strokeText(ln, x, cy); }",
+                    "    cy += lineHeight;",
+                    "  }",
+                    "  if (shadow){ ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0; }",
+                    "}",
                     ""
                 ];
+
                 this.texts.forEach(t => {
+                    const safeText = this.escapeForCode(t.text);
                     lines.push(`ctx.font = '${t.fontSize}px ${t.fontFamily}';`);
-                    lines.push(`ctx.fillStyle = '${t.color}';`);
-                    lines.push(`ctx.textAlign = 'center'; ctx.textBaseline = 'middle';`);
-                    const bounds = this.getTextBounds(t);
-                    const startY = Math.round(t.y - (bounds.height / 2) + (bounds.lineHeight / 2));
-                    bounds.lines.forEach((line, idx) => {
-                        const safe = this.escapeForCode(line);
-                        const y = Math.round(startY + idx * bounds.lineHeight);
-                        lines.push(`ctx.fillText('${safe}', ${Math.round(t.x)}, ${y});`);
-                    });
+                    lines.push(`drawMultilineCentered(ctx, '${safeText}', ${Math.round(t.x)}, ${Math.round(t.y)}, ${t.fontSize}, '${t.color}', ${this.textStroke}, ${this.textShadow});`);
                     lines.push('');
                 });
-                lines.push("// canvas.toBuffer() veya benzeri ile kullanın");
+
+                lines.push("// Sonuç: canvas.toBuffer(), canvas.createPNGStream(), vs.");
                 this.exportBox.textContent = lines.join('\n');
             }
 
-            /* ---------- history (snapshot includes canvas size + nextId) ---------- */
+            /* ---------- history ---------- */
             saveHistory() {
                 const snapshot = {
                     texts: JSON.parse(JSON.stringify(this.texts)),
                     bgColor: this.bgColor,
                     nextId: this.nextId,
                     canvasW: Number(this.manualWidth.value) || Math.round(this.canvas.clientWidth),
-                    canvasH: Number(this.manualHeight.value) || Math.round(this.canvas.clientHeight)
+                    canvasH: Number(this.manualHeight.value) || Math.round(this.canvas.clientHeight),
+                    bgFit: this.bgFit,
+                    bgOpacity: this.bgOpacity,
+                    hasBgImage: !!this.bgImage,
+                    textStroke: this.textStroke,
+                    textShadow: this.textShadow
                 };
                 this.history.push(JSON.stringify(snapshot));
                 if (this.history.length > this.maxHistory) this.history.shift();
@@ -542,27 +650,33 @@
                 if (this.history.length <= 1) return;
                 this.redoStack.push(this.history.pop());
                 const prev = JSON.parse(this.history[this.history.length - 1]);
-                this.texts = prev.texts || [];
-                this.bgColor = prev.bgColor || this.bgColor;
-                this.nextId = prev.nextId || this.nextId;
-                const w = prev.canvasW || Number(this.manualWidth.value);
-                const h = prev.canvasH || Number(this.manualHeight.value);
-                this.manualWidth.value = w; this.manualHeight.value = h;
-                this.resizeCanvasForDPR(w, h);
-                this.renderTextList();
-                this.updateCanvas();
-                this.updateUndoRedoButtons();
+                this.applySnapshot(prev);
             }
 
             redo() {
                 if (this.redoStack.length === 0) return;
-                this.history.push(this.redoStack.pop());
-                const cur = JSON.parse(this.history[this.history.length - 1]);
-                this.texts = cur.texts || [];
-                this.bgColor = cur.bgColor || this.bgColor;
-                this.nextId = cur.nextId || this.nextId;
-                const w = cur.canvasW || Number(this.manualWidth.value);
-                const h = cur.canvasH || Number(this.manualHeight.value);
+                const snap = this.redoStack.pop();
+                this.history.push(snap);
+                const cur = JSON.parse(snap);
+                this.applySnapshot(cur);
+            }
+
+            applySnapshot(snap) {
+                this.texts = snap.texts || [];
+                this.bgColor = snap.bgColor || this.bgColor;
+                this.nextId = snap.nextId || this.nextId;
+                this.bgFit = snap.bgFit || this.bgFit;
+                this.bgOpacity = (typeof snap.bgOpacity === 'number') ? snap.bgOpacity : this.bgOpacity;
+                this.textStroke = !!snap.textStroke;
+                this.textShadow = !!snap.textShadow;
+
+                this.bgFitSel.value = this.bgFit;
+                this.bgAlpha.value = String(this.bgOpacity);
+                this.strokeChk.checked = this.textStroke;
+                this.shadowChk.checked = this.textShadow;
+
+                const w = snap.canvasW || Number(this.manualWidth.value);
+                const h = snap.canvasH || Number(this.manualHeight.value);
                 this.manualWidth.value = w; this.manualHeight.value = h;
                 this.resizeCanvasForDPR(w, h);
                 this.renderTextList();
@@ -575,9 +689,9 @@
                 this.redoBtn.disabled = this.redoStack.length === 0;
             }
 
-            /* ---------- event wiring ---------- */
+            /* ---------- events ---------- */
             initEvents() {
-                // mouse drag on canvas
+                // Canvas drag & select
                 this.canvas.addEventListener('mousedown', (ev) => {
                     const rect = this.canvas.getBoundingClientRect();
                     const mx = ev.clientX - rect.left;
@@ -586,12 +700,15 @@
                     if (hit !== null) {
                         this.dragging = true;
                         this.dragTarget = hit;
+                        this.selectedIndex = hit;
                         const t = this.texts[hit];
                         this.dragOffsetX = mx - t.x;
                         this.dragOffsetY = my - t.y;
                         this.canvas.style.cursor = 'grabbing';
-                        this.updateCanvas();
+                    } else {
+                        this.selectedIndex = null;
                     }
+                    this.updateCanvas();
                 });
 
                 window.addEventListener('mousemove', (ev) => {
@@ -600,8 +717,9 @@
                     const mx = ev.clientX - rect.left;
                     const my = ev.clientY - rect.top;
                     const t = this.texts[this.dragTarget];
-                    t.x = Math.max(0, Math.min(this.canvas.clientWidth, mx - this.dragOffsetX));
-                    t.y = Math.max(0, Math.min(this.canvas.clientHeight, my - this.dragOffsetY));
+                    const { w: CW, h: CH } = this.cssSize();
+                    t.x = Math.max(0, Math.min(CW, mx - this.dragOffsetX));
+                    t.y = Math.max(0, Math.min(CH, my - this.dragOffsetY));
                     this.updateCanvas();
                 });
 
@@ -614,7 +732,40 @@
                     this.saveHistory();
                 });
 
-                // list input delegation
+                // Klavye kısayolları
+                window.addEventListener('keydown', (e) => {
+                    const mod = e.ctrlKey || e.metaKey;
+                    if (mod && (e.key.toLowerCase() === 'z')) {
+                        e.preventDefault();
+                        if (e.shiftKey) this.redo(); else this.undo();
+                        return;
+                    }
+                    if (mod && (e.key.toLowerCase() === 'y')) {
+                        e.preventDefault();
+                        this.redo();
+                        return;
+                    }
+
+                    const sel = (this.selectedIndex != null) ? this.texts[this.selectedIndex] : null;
+                    if (!sel) return;
+
+                    const step = e.shiftKey ? 10 : 1;
+                    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Backspace'].includes(e.key)) e.preventDefault();
+
+                    const { w: CW, h: CH } = this.cssSize();
+                    if (e.key === 'ArrowLeft') sel.x = Math.max(0, sel.x - step);
+                    if (e.key === 'ArrowRight') sel.x = Math.min(CW, sel.x + step);
+                    if (e.key === 'ArrowUp') sel.y = Math.max(0, sel.y - step);
+                    if (e.key === 'ArrowDown') sel.y = Math.min(CH, sel.y + step);
+                    if (e.key === 'Delete' || e.key === 'Backspace') {
+                        this.texts.splice(this.selectedIndex, 1);
+                        this.selectedIndex = null;
+                    }
+                    this.updateCanvas();
+                    this.debouncedSave();
+                });
+
+                // Liste içi inputlar
                 this.textsList.addEventListener('input', (ev) => {
                     const el = ev.target;
                     const parent = el.closest('.text-item');
@@ -627,13 +778,19 @@
                     else if (field === 'fontSize') { t.fontSize = Math.max(8, Math.min(400, Number(el.value) || 36)); }
                     else if (field === 'fontFamily') { t.fontFamily = el.value; }
                     else if (field === 'color') { t.color = el.value; }
-                    else if (field === 'x') { t.x = Math.max(0, Math.min(this.canvas.clientWidth, Number(el.value) || 0)); }
-                    else if (field === 'y') { t.y = Math.max(0, Math.min(this.canvas.clientHeight, Number(el.value) || 0)); }
+                    else if (field === 'x') {
+                        const { w: CW } = this.cssSize();
+                        t.x = Math.max(0, Math.min(CW, Number(el.value) || 0));
+                    }
+                    else if (field === 'y') {
+                        const { h: CH } = this.cssSize();
+                        t.y = Math.max(0, Math.min(CH, Number(el.value) || 0));
+                    }
                     this.updateCanvas();
                     this.debouncedSave();
                 });
 
-                // clicks in texts list (center/remove)
+                // Liste butonları
                 this.textsList.addEventListener('click', (ev) => {
                     const btn = ev.target.closest('button');
                     if (!btn) return;
@@ -641,13 +798,23 @@
                     const id = Number(item.dataset.id);
                     const idx = this.texts.findIndex(x => x.id === id);
                     if (btn.dataset.action === 'remove') {
-                        if (idx >= 0) { this.texts.splice(idx, 1); this.renderTextList(); this.updateCanvas(); this.saveHistory(); }
+                        if (idx >= 0) {
+                            this.texts.splice(idx, 1);
+                            if (this.selectedIndex === idx) this.selectedIndex = null;
+                            this.renderTextList(); this.updateCanvas(); this.saveHistory();
+                        }
                     } else if (btn.dataset.action === 'center') {
-                        if (idx >= 0) { this.texts[idx].x = this.canvas.clientWidth / 2; this.texts[idx].y = this.canvas.clientHeight / 2; this.updateCanvas(); this.saveHistory(); }
+                        if (idx >= 0) {
+                            const { w: CW, h: CH } = this.cssSize();
+                            this.texts[idx].x = CW / 2;
+                            this.texts[idx].y = CH / 2;
+                            this.selectedIndex = idx;
+                            this.updateCanvas(); this.saveHistory();
+                        }
                     }
                 });
 
-                // add text
+                // Metin ekle
                 this.addTextBtn.addEventListener('click', () => {
                     const custom = prompt('İçerik:', 'Ben Bir Muzum');
                     if (custom !== null && custom !== undefined) {
@@ -656,62 +823,59 @@
                     }
                 });
 
-                // apply dims
+                // Boyut uygula
                 this.applyDimsBtn.addEventListener('click', () => {
                     const w = Math.max(50, Math.min(3000, Number(this.manualWidth.value) || 800));
                     const h = Math.max(30, Math.min(3000, Number(this.manualHeight.value) || 450));
-                    const prevW = this.canvas.clientWidth || Number(this.manualWidth.value);
-                    const prevH = this.canvas.clientHeight || Number(this.manualHeight.value);
-                    const rels = this.texts.map(t => ({ x: t.x / prevW, y: t.y / prevH }));
+                    const prev = this.cssSize();
+                    const rels = this.texts.map(t => ({ x: t.x / prev.w, y: t.y / prev.h }));
                     this.resizeCanvasForDPR(w, h);
-                    this.texts.forEach((t, i) => { t.x = Math.round(Math.max(0, Math.min(w, rels[i].x * w || w / 2))); t.y = Math.round(Math.max(0, Math.min(h, rels[i].y * h || h / 2))); });
+                    this.texts.forEach((t, i) => {
+                        t.x = Math.round(Math.max(0, Math.min(w, (rels[i].x * w) || w / 2)));
+                        t.y = Math.round(Math.max(0, Math.min(h, (rels[i].y * h) || h / 2)));
+                    });
                     this.updateCanvas();
                     this.saveHistory();
                 });
 
-                // bg color change
+                // BG renk
                 this.bgColorInput.addEventListener('input', (ev) => {
                     this.bgColor = ev.target.value;
-                    this.updateCanvas();
-                    this.debouncedSave();
+                    if (!this.bgImage) { this.updateCanvas(); this.debouncedSave(); }
                 });
 
-                // undo/redo
+                // Undo/Redo butonları
                 this.undoBtn.addEventListener('click', () => this.undo());
                 this.redoBtn.addEventListener('click', () => this.redo());
 
-                // copy export
+                // Kopyala (export)
                 this.copyAllBtn.addEventListener('click', async () => {
                     const txt = this.exportBox.textContent;
                     try {
                         await navigator.clipboard.writeText(txt);
                         this.copyFeedback.style.display = 'block';
                         setTimeout(() => this.copyFeedback.style.display = 'none', 1500);
-                    } catch (e) {
-                        const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
-                        try { document.execCommand('copy'); this.copyFeedback.style.display = 'block'; setTimeout(() => this.copyFeedback.style.display = 'none', 1500); } catch (e2) { alert('Kopyalama başarısız.'); }
+                    } catch {
+                        const ta = document.createElement('textarea'); ta.value = txt;
+                        document.body.appendChild(ta); ta.select();
+                        try { document.execCommand('copy'); this.copyFeedback.style.display = 'block'; setTimeout(() => this.copyFeedback.style.display = 'none', 1500); }
+                        catch { alert('Kopyalama başarısız.'); }
                         document.body.removeChild(ta);
                     }
                 });
 
-                // download PNG (use CSS size)
+                // PNG indir
                 this.downloadPngBtn.addEventListener('click', () => {
-                    const cssW = this.canvas.clientWidth || Number(this.manualWidth.value);
-                    const cssH = this.canvas.clientHeight || Number(this.manualHeight.value);
-                    // create temp canvas with same DPI-backed image
-                    // we can use existing canvas.toDataURL (already DPI scaled) but ensure CSS size mapping ok
                     const link = document.createElement('a');
                     link.download = 'canvas-text.png';
                     link.href = this.canvas.toDataURL('image/png');
                     link.click();
                 });
 
-
-                // foto ekleme
+                // BG resim ekle
                 this.applyBgImageBtn.addEventListener('click', () => {
                     const file = this.bgImageInput.files[0];
                     if (!file) return alert('Lütfen bir resim seçin.');
-
                     const img = new Image();
                     img.onload = () => {
                         this.bgImage = img;
@@ -719,63 +883,75 @@
                         this.saveHistory();
                     };
                     img.onerror = () => alert('Resim yüklenemedi.');
-                    img.src = URL.createObjectURL(file);
+                    if (this._bgObjectUrl) URL.revokeObjectURL(this._bgObjectUrl);
+                    this._bgObjectUrl = URL.createObjectURL(file);
+                    img.src = this._bgObjectUrl;
                 });
 
+                // BG resim kaldır
+                this.removeBgBtn.addEventListener('click', () => {
+                    if (this._bgObjectUrl) { URL.revokeObjectURL(this._bgObjectUrl); this._bgObjectUrl = null; }
+                    this.bgImage = null;
+                    this.updateCanvas();
+                    this.saveHistory();
+                });
+
+                // BG fit/alpha
+                this.bgFitSel.addEventListener('change', e => { this.bgFit = e.target.value; this.updateCanvas(); this.debouncedSave(); });
+                this.bgAlpha.addEventListener('input', e => { this.bgOpacity = Number(e.target.value); this.updateCanvas(); this.debouncedSave(); });
+
+                // Stroke/Shadow toggles
+                this.strokeChk.addEventListener('change', e => { this.textStroke = e.target.checked; this.updateCanvas(); this.debouncedSave(); });
+                this.shadowChk.addEventListener('change', e => { this.textShadow = e.target.checked; this.updateCanvas(); this.debouncedSave(); });
+
+                // Canvas focus için klavye yakalama
+                this.canvas.addEventListener('click', () => this.canvas.focus());
             }
 
             /* ---------- text management ---------- */
             addNewText(custom = {}) {
                 const idx = this.texts.length;
-                const w = this.canvas.clientWidth || Number(this.manualWidth.value);
-                const h = this.canvas.clientHeight || Number(this.manualHeight.value);
+                const { w: CW, h: CH } = this.cssSize();
+                const colorDefault = (idx === 0 ? '#000000' : this.defaultDarkColor(idx));
                 const t = {
                     id: this.nextId++,
                     text: custom.text ?? `Ben Bir Muzum ${idx + 1}`,
-                    x: custom.x ?? Math.round(w / 2),
-                    y: custom.y ?? Math.round(h / 2) + idx * 30,
+                    x: custom.x ?? Math.round(CW / 2),
+                    y: custom.y ?? Math.round(CH / 2) + idx * 30,
                     fontSize: custom.fontSize ?? 36,
-                    color: '#ffffff' ?? this.defaultDarkColor(idx),
+                    color: custom.color ?? colorDefault,
                     fontFamily: custom.fontFamily ?? 'Roboto'
                 };
                 this.texts.push(t);
+                this.selectedIndex = this.texts.length - 1;
                 this.renderTextList();
                 this.updateCanvas();
             }
 
             addInitialTexts() {
-                // ONLY one initial text now (Başlık, siyah)
-                this.addNewText({ text: 'Ben Bir Muzum', fontSize: 56, color: '#ffffff' });
+                // İlk metin siyah (kontrast için BG açıkken beyaz istenirse custom.color verilebilir)
+                this.addNewText({ text: 'Ben Bir Muzum', fontSize: 56 });
             }
 
             /* ---------- font load wait ---------- */
             waitForFontsThenRender() {
+                const w = Number(this.manualWidth.value) || 800;
+                const h = Number(this.manualHeight.value) || 450;
                 if (document.fonts && document.fonts.ready) {
                     document.fonts.ready.then(() => {
-                        // ensure canvas is resized to current manual inputs too
-                        const w = Number(this.manualWidth.value) || 800;
-                        const h = Number(this.manualHeight.value) || 450;
                         this.resizeCanvasForDPR(w, h);
                         this.updateCanvas();
-                    }).catch(() => { /* ignore */ });
+                    }).catch(() => { this.resizeCanvasForDPR(w, h); this.updateCanvas(); });
                 } else {
-                    // fallback; still ensure canvas size
-                    const w = Number(this.manualWidth.value) || 800;
-                    const h = Number(this.manualHeight.value) || 450;
                     this.resizeCanvasForDPR(w, h);
                     this.updateCanvas();
                 }
             }
-
-
         }
 
-        /* ---------- instantiate ---------- */
+        // instantiate
         const editor = new CanvasTextEditor();
-
     </script>
 </body>
 
-
 </html>
-
