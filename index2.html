@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pratik Discord.JS Canvas </title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans&display=swap">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to bottom, #f0f4f8, #e0e8f0);
+            color: #202124;
+            display: flex;
+            gap: 20px;
+            min-height: 80vh;
+        }
+
+        #controls {
+            width: 340px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        #canvas-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        canvas {
+            border: 1px solid #ccd6dd;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            cursor: grab;
+            display: block;
+        }
+
+        label {
+            font-size: 14px;
+            margin-top: 12px;
+            color: #4d5156;
+            display: block;
+        }
+
+        input,
+        select,
+        button,
+        textarea {
+            width: 100%;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row .half {
+            flex: 1;
+        }
+
+        .text-item {
+            border: 1px solid #e8eaed;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: box-shadow .12s;
+        }
+
+        .text-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .small-btn {
+            width: auto;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: #1a73e8;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .small-btn.grey {
+            background: #5f6368;
+        }
+
+        .muted {
+            color: #5f6368;
+            font-size: 13px;
+        }
+
+        .export-box {
+            background: #202124;
+            color: #e8eaed;
+            padding: 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 220px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        #texts-list {
+            max-height: 380px;
+            overflow: auto;
+            padding-right: 6px;
+            margin-top: 10px;
+        }
+
+        @media (max-width:900px) {
+            body {
+                flex-direction: column
+            }
+
+            #controls {
+                width: 100%;
+                max-width: 900px
+            }
+        }
+
+        /* Yeni credit box stili — ekle bu satırları style bloğuna */
+        .credit-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #ffffff;
+            /* kutu rengi */
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+            border: 1px solid rgba(16, 24, 40, 0.04);
+            max-width: 820px;
+            margin-top: 8px;
+        }
+
+        /* metin alanı içindeki küçük satırlar */
+        .credit-box .muted.small {
+            margin: 0;
+            color: #5f6368;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Shu vurgusu */
+        .credit-box .shu {
+            color: #1a73e8;
+            /* vurgu rengi, dilediğin renge çevir */
+            font-weight: 700;
+        }
+
+        /* Discord icon link stili */
+        .discord-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+
+        .discord-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(88, 101, 242, 0.18);
+        }
+
+        .discord-link svg {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="controls">
+        <h3>Kontroller</h3>
+
+        <label>Genişlik (px)</label>
+        <input type="number" id="manual-width" min="50" max="3000" value="800">
+
+        <label>Yükseklik (px)</label>
+        <input type="number" id="manual-height" min="30" max="3000" value="450">
+
+        <label>Arka Plan Rengi</label>
+        <input type="color" id="bg-color" value="#0f1720">
+
+        <label>Arka Plan Fotoğrafı (Opsiyonel)</label>
+        <input type="file" id="bg-image-input" accept="image/*" style="margin-top:6px">
+        <button id="apply-bg-image" class="small-btn grey" style="margin-top:6px">Foto Ekle</button>
+
+
+        <div class="top-actions">
+            <button id="apply-dims" class="small-btn">Uygula</button>
+            <button id="add-text" class="small-btn grey">Metin Ekle</button>
+            <button id="undo" class="small-btn grey" disabled>Geri Al</button>
+            <button id="redo" class="small-btn grey" disabled>İleri Al</button>
+        </div>
+
+        <p class="muted">İlk metin varsayılan siyah, diğerleri koyu tonlarda başlar. Çok satırlı için \\n kullanın.</p>
+
+        <div id="texts-list"></div>
+
+        <h4 style="margin-top:10px">Export (Discord.js)</h4>
+        <div class="export-box" id="export-code">// Metinleri ekleyin, düzenleyin ve 'Tümünü Kopyala'ya basın.</div>
+
+        <div class="row" style="margin-top:10px">
+            <button id="copy-all" class="small-btn">Tümünü Kopyala</button>
+            <button id="download-png" class="small-btn grey">PNG İndir</button>
+        </div>
+        <p id="copy-feedback" class="muted" style="display:none;margin-top:8px">Kopyalandı!</p>
+    </div>
+
+    <div id="canvas-wrap">
+        <canvas id="canvas" width="800" height="450" role="img" aria-label="Canvas önizleme"></canvas>
+
+        <!-- REPLACE the two <p> lines with this credit box -->
+        <div class="credit-box" role="contentinfo" aria-label="Credit and Discord invite">
+            <div class="credit-text" style="flex:1">
+                <p class="muted small" style="margin:0; text-align:center">
+                    Metinleri sürükleyin. Listeden düzenleyin, ortalayın veya silin.
+                </p>
+                <p class="muted small" style="margin:6px 0 0 0; text-align:center">
+                    Bu kod <span class="shu">Shu</span> tarafından hazırlanmıştır.
+                </p>
+            </div>
+
+            <a class="discord-link" href="https://discord.gg/REPLACE_WITH_YOUR_INVITE" target="_blank"
+                rel="noopener noreferrer" aria-label="Discord sunucusuna katıl" title="Sunucuya katıl">
+                <!-- small Discord SVG (28x28) -->
+                <svg width="28" height="28" viewBox="0 0 245 240" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-hidden="false">
+                    <path fill="#5865F2"
+                        d="M104.4 104.6c-5.7 0-10.2 5-10.2 11.1 0 6.1 4.6 11.1 10.2 11.1 5.7 0 10.3-5 10.2-11.1 0-6.1-4.6-11.1-10.2-11.1zm36.2 0c-5.7 0-10.2 5-10.2 11.1 0 6.1 4.6 11.1 10.2 11.1 5.7 0 10.3-5 10.2-11.1 0-6.1-4.6-11.1-10.2-11.1z" />
+                    <path fill="#5865F2"
+                        d="M189.5 20H55.5C36.7 20 22 34.5 22 53.4v133.2c0 18.9 14.7 33.4 33.5 33.4h101.6l-4.8-16.8 11.6 10.9 10.9 9.9 19.4 17.9V53.4c0-18.9-14.7-33.4-33.6-33.4zm-46.1 153.4s-4.3-5.1-7.9-9.6c15.7-4.5 21.7-14.2 21.7-14.2-4.9 3.3-9.5 5.7-13.7 7.3-6 2.5-11.8 4.1-17.5 5-11.6 2.3-22.2 1.8-31.2-.1-6.8-1.4-12.7-3.5-17.6-5-2.7-0.9-5.6-2-8.5-3.4-0.4-0.2-0.9-0.4-1.3-0.6-0.3-0.1-0.4-0.2-0.6-0.3-0.1 0-0.1-0.1-0.2-0.1-0.6-0.3-0.9-0.5-0.9-0.5s6 9.5 22 14.1c-3.6 4.6-8.1 10.1-8.1 10.1-26.7-0.8-36.9-18.4-36.9-18.4 0-39 17.5-70.7 17.5-70.7 17.5-13 34.1-12.6 34.1-12.6l1.2 1.4c-21.9 6.3-32 15.8-32 15.8s2.7-1.5 7.2-3.6c13-5.9 23.2-7.5 27.4-8 0.7-0.1 1.3-0.2 2-0.3 7.6-1.7 16.2-2.6 25.1-2.6 8.9 0 17.5 0.9 25.1 2.6 0.7 0.1 1.4 0.2 2 0.3 4.2 0.5 14.4 2.1 27.4 8 4.6 2 7.3 3.6 7.3 3.6s-10.3-9.5-32.1-15.8l1.8-2.1s16.6-0.4 34.1 12.6c0 0 17.5 31.7 17.5 70.7 0 0-10.2 17.6-36.9 18.4z" />
+                </svg>
+            </a>
+        </div>
+    </div>
+
+
+    <script>
+        /* ---------- CanvasTextEditor: güncellenmiş, DPR/font/undo/redo/debounce ile ---------- */
+
+        class CanvasTextEditor {
+            constructor() {
+                // DOM
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.manualWidth = document.getElementById('manual-width');
+                this.manualHeight = document.getElementById('manual-height');
+                this.bgColorInput = document.getElementById('bg-color');
+                this.applyDimsBtn = document.getElementById('apply-dims');
+                this.addTextBtn = document.getElementById('add-text');
+                this.undoBtn = document.getElementById('undo');
+                this.redoBtn = document.getElementById('redo');
+                this.textsList = document.getElementById('texts-list');
+                this.exportBox = document.getElementById('export-code');
+                this.copyAllBtn = document.getElementById('copy-all');
+                this.downloadPngBtn = document.getElementById('download-png');
+                this.copyFeedback = document.getElementById('copy-feedback');
+
+                this.bgImage = null; // opsiyonel arka plan resmi
+                this.bgImageInput = document.getElementById('bg-image-input');
+                this.applyBgImageBtn = document.getElementById('apply-bg-image');
+
+
+                // State
+                this.texts = [];
+                this.history = [];
+                this.redoStack = [];
+                this.nextId = 1;
+                this.dragging = false;
+                this.dragTarget = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                this.bgColor = this.bgColorInput.value || '#0f1720';
+                this.maxHistory = 60;
+
+                // helpers
+                this.debouncedSave = this.debounce(() => this.saveHistory(), 650);
+
+                // init
+                this.initEvents();
+                this.addInitialTexts(); // adds only ONE initial text now
+                this.saveHistory(); // initial snapshot
+                this.waitForFontsThenRender();
+            }
+
+            /* ---------- helpers ---------- */
+            debounce(fn, wait = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
+
+            defaultDarkColor(idx) {
+                if (idx === 0) return '#000000';
+                const shades = ['#111111', '#222222', '#2b2b2b', '#333333', '#3c3c3c', '#444444', '#4d4d4d'];
+                return shades[(idx - 1) % shades.length];
+            }
+
+            escapeForCode(s) {
+                return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+            }
+
+            /* ---------- DPR-aware resize ---------- */
+            resizeCanvasForDPR(cssW, cssH) {
+                const dpr = window.devicePixelRatio || 1;
+                // set CSS size
+                this.canvas.style.width = cssW + 'px';
+                this.canvas.style.height = cssH + 'px';
+                // backing store
+                this.canvas.width = Math.max(1, Math.round(cssW * dpr));
+                this.canvas.height = Math.max(1, Math.round(cssH * dpr));
+                // scale so we can use CSS pixel coordinates
+                this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            /* ---------- text bounds / multi-line support ---------- */
+            getTextBounds(t) {
+                // compute width as max line width; height via lineHeight * lines
+                this.ctx.font = `${t.fontSize}px ${t.fontFamily}`;
+                const lines = (t.text === undefined || t.text === null) ? [''] : String(t.text).split('\n');
+                const widths = lines.map(line => this.ctx.measureText(line).width || 0);
+                const maxW = widths.length ? Math.max(...widths) : 0;
+                const lineHeight = Math.round(t.fontSize * 1.2);
+                const h = lines.length * lineHeight;
+                return { width: maxW, height: h, lineHeight, lines };
+            }
+
+            /* ---------- hit test (topmost first) ---------- */
+            hitTest(mx, my) {
+                for (let i = this.texts.length - 1; i >= 0; i--) {
+                    const t = this.texts[i];
+                    const b = this.getTextBounds(t);
+                    const left = t.x - b.width / 2;
+                    const right = t.x + b.width / 2;
+                    const top = t.y - b.height / 2;
+                    const bottom = t.y + b.height / 2;
+                    if (mx >= left && mx <= right && my >= top && my <= bottom) return i;
+                }
+                return null;
+            }
+
+            /* ---------- render ---------- */
+            updateCanvas() {
+                // clear and background
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (this.bgImage) {
+                    this.ctx.drawImage(this.bgImage, 0, 0, this.canvas.width, this.canvas.height);
+                } else {
+                    this.ctx.fillStyle = this.bgColor || '#0f1720';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+
+                // tüm metinleri çiz
+                this.texts.forEach(t => {
+                    this.ctx.font = `${t.fontSize}px ${t.fontFamily}`;
+                    this.ctx.fillStyle = t.color;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+
+                    const bounds = this.getTextBounds(t);
+                    const startY = t.y - bounds.height / 2 + bounds.lineHeight / 2;
+
+                    bounds.lines.forEach((line, idx) => {
+                        this.ctx.fillText(line, t.x, startY + idx * bounds.lineHeight);
+                    });
+                });
+
+                // export kodu tazele
+                this.refreshExportCode();
+                this.syncListPositions();
+            }
+
+
+
+            /* ---------- UI list render (DOM create, textarea.value kullan) ---------- */
+            renderTextList() {
+                this.textsList.innerHTML = '';
+                this.texts.forEach((t, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'text-item';
+                    div.dataset.id = t.id;
+
+                    // header with actions
+                    const header = document.createElement('div');
+                    header.style.display = 'flex';
+                    header.style.gap = '12px';
+                    header.style.alignItems = 'center';
+
+                    const strong = document.createElement('strong');
+                    strong.textContent = `Metin ${i + 1}`;
+                    header.appendChild(strong);
+
+                    const filler = document.createElement('div'); filler.style.flex = '1';
+                    header.appendChild(filler);
+
+                    const centerBtn = document.createElement('button');
+                    centerBtn.className = 'small-btn grey';
+                    centerBtn.textContent = 'Ortala';
+                    centerBtn.dataset.action = 'center';
+                    header.appendChild(centerBtn);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'small-btn';
+                    removeBtn.textContent = 'Sil';
+                    removeBtn.dataset.action = 'remove';
+                    header.appendChild(removeBtn);
+
+                    div.appendChild(header);
+
+                    // textarea (value)
+                    const lbl = document.createElement('label'); lbl.textContent = 'İçerik:';
+                    div.appendChild(lbl);
+
+                    const ta = document.createElement('textarea');
+                    ta.dataset.field = 'text';
+                    ta.rows = 2;
+                    ta.value = t.text;
+                    ta.style.marginTop = '6px';
+                    div.appendChild(ta);
+
+                    // font size + family
+                    const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '8px';
+                    const fs = document.createElement('input'); fs.className = 'half'; fs.dataset.field = 'fontSize'; fs.type = 'number'; fs.min = 8; fs.max = 400; fs.value = t.fontSize;
+                    const ff = document.createElement('select'); ff.className = 'half'; ff.dataset.field = 'fontFamily';
+                    ['Roboto', 'Open Sans', 'Arial', 'Helvetica', 'Times New Roman', 'Courier New'].forEach(opt => {
+                        const o = document.createElement('option'); o.textContent = opt; if (opt === t.fontFamily) o.selected = true; ff.appendChild(o);
+                    });
+                    row.appendChild(fs); row.appendChild(ff);
+                    div.appendChild(row);
+
+                    // color
+                    const lblc = document.createElement('label'); lblc.textContent = 'Renk'; lblc.style.marginTop = '10px';
+                    div.appendChild(lblc);
+                    const colorInp = document.createElement('input'); colorInp.type = 'color'; colorInp.dataset.field = 'color'; colorInp.value = t.color; colorInp.style.marginTop = '6px';
+                    div.appendChild(colorInp);
+
+                    // position x,y
+                    const lblpos = document.createElement('label'); lblpos.textContent = 'Pozisyon (x, y)'; lblpos.style.marginTop = '10px';
+                    div.appendChild(lblpos);
+                    const row2 = document.createElement('div'); row2.className = 'row';
+                    const xin = document.createElement('input'); xin.dataset.field = 'x'; xin.type = 'number'; xin.value = Math.round(t.x);
+                    const yin = document.createElement('input'); yin.dataset.field = 'y'; yin.type = 'number'; yin.value = Math.round(t.y);
+                    row2.appendChild(xin); row2.appendChild(yin);
+                    div.appendChild(row2);
+
+                    this.textsList.appendChild(div);
+                });
+            }
+
+            /* ---------- sync list inputs with model ---------- */
+            syncListPositions() {
+                const items = this.textsList.querySelectorAll('.text-item');
+                items.forEach(item => {
+                    const id = Number(item.dataset.id);
+                    const t = this.texts.find(x => x.id === id);
+                    if (!t) return;
+                    const xin = item.querySelector('input[data-field="x"]');
+                    const yin = item.querySelector('input[data-field="y"]');
+                    if (document.activeElement !== xin) xin.value = Math.round(t.x);
+                    if (document.activeElement !== yin) yin.value = Math.round(t.y);
+                });
+            }
+
+            /* ---------- export code generation (safe escape) ---------- */
+            refreshExportCode() {
+                const lines = [
+                    "// Discord.js Canvas Example (node-canvas)",
+                    "const { createCanvas } = require('canvas');",
+                    `const canvas = createCanvas(${this.canvas.clientWidth || Number(this.manualWidth.value)}, ${this.canvas.clientHeight || Number(this.manualHeight.value)});`,
+                    "const ctx = canvas.getContext('2d');",
+                    `ctx.fillStyle = '${this.bgColor}';`,
+                    `ctx.fillRect(0, 0, ${this.canvas.clientWidth || Number(this.manualWidth.value)}, ${this.canvas.clientHeight || Number(this.manualHeight.value)});`,
+                    ""
+                ];
+                this.texts.forEach(t => {
+                    lines.push(`ctx.font = '${t.fontSize}px ${t.fontFamily}';`);
+                    lines.push(`ctx.fillStyle = '${t.color}';`);
+                    lines.push(`ctx.textAlign = 'center'; ctx.textBaseline = 'middle';`);
+                    const bounds = this.getTextBounds(t);
+                    const startY = Math.round(t.y - (bounds.height / 2) + (bounds.lineHeight / 2));
+                    bounds.lines.forEach((line, idx) => {
+                        const safe = this.escapeForCode(line);
+                        const y = Math.round(startY + idx * bounds.lineHeight);
+                        lines.push(`ctx.fillText('${safe}', ${Math.round(t.x)}, ${y});`);
+                    });
+                    lines.push('');
+                });
+                lines.push("// canvas.toBuffer() veya benzeri ile kullanın");
+                this.exportBox.textContent = lines.join('\n');
+            }
+
+            /* ---------- history (snapshot includes canvas size + nextId) ---------- */
+            saveHistory() {
+                const snapshot = {
+                    texts: JSON.parse(JSON.stringify(this.texts)),
+                    bgColor: this.bgColor,
+                    nextId: this.nextId,
+                    canvasW: Number(this.manualWidth.value) || Math.round(this.canvas.clientWidth),
+                    canvasH: Number(this.manualHeight.value) || Math.round(this.canvas.clientHeight)
+                };
+                this.history.push(JSON.stringify(snapshot));
+                if (this.history.length > this.maxHistory) this.history.shift();
+                this.redoStack = [];
+                this.updateUndoRedoButtons();
+            }
+
+            undo() {
+                if (this.history.length <= 1) return;
+                this.redoStack.push(this.history.pop());
+                const prev = JSON.parse(this.history[this.history.length - 1]);
+                this.texts = prev.texts || [];
+                this.bgColor = prev.bgColor || this.bgColor;
+                this.nextId = prev.nextId || this.nextId;
+                const w = prev.canvasW || Number(this.manualWidth.value);
+                const h = prev.canvasH || Number(this.manualHeight.value);
+                this.manualWidth.value = w; this.manualHeight.value = h;
+                this.resizeCanvasForDPR(w, h);
+                this.renderTextList();
+                this.updateCanvas();
+                this.updateUndoRedoButtons();
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+                this.history.push(this.redoStack.pop());
+                const cur = JSON.parse(this.history[this.history.length - 1]);
+                this.texts = cur.texts || [];
+                this.bgColor = cur.bgColor || this.bgColor;
+                this.nextId = cur.nextId || this.nextId;
+                const w = cur.canvasW || Number(this.manualWidth.value);
+                const h = cur.canvasH || Number(this.manualHeight.value);
+                this.manualWidth.value = w; this.manualHeight.value = h;
+                this.resizeCanvasForDPR(w, h);
+                this.renderTextList();
+                this.updateCanvas();
+                this.updateUndoRedoButtons();
+            }
+
+            updateUndoRedoButtons() {
+                this.undoBtn.disabled = this.history.length <= 1;
+                this.redoBtn.disabled = this.redoStack.length === 0;
+            }
+
+            /* ---------- event wiring ---------- */
+            initEvents() {
+                // mouse drag on canvas
+                this.canvas.addEventListener('mousedown', (ev) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mx = ev.clientX - rect.left;
+                    const my = ev.clientY - rect.top;
+                    const hit = this.hitTest(mx, my);
+                    if (hit !== null) {
+                        this.dragging = true;
+                        this.dragTarget = hit;
+                        const t = this.texts[hit];
+                        this.dragOffsetX = mx - t.x;
+                        this.dragOffsetY = my - t.y;
+                        this.canvas.style.cursor = 'grabbing';
+                        this.updateCanvas();
+                    }
+                });
+
+                window.addEventListener('mousemove', (ev) => {
+                    if (!this.dragging || this.dragTarget === null) return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mx = ev.clientX - rect.left;
+                    const my = ev.clientY - rect.top;
+                    const t = this.texts[this.dragTarget];
+                    t.x = Math.max(0, Math.min(this.canvas.clientWidth, mx - this.dragOffsetX));
+                    t.y = Math.max(0, Math.min(this.canvas.clientHeight, my - this.dragOffsetY));
+                    this.updateCanvas();
+                });
+
+                window.addEventListener('mouseup', () => {
+                    if (!this.dragging) return;
+                    this.dragging = false;
+                    this.dragTarget = null;
+                    this.canvas.style.cursor = 'grab';
+                    this.updateCanvas();
+                    this.saveHistory();
+                });
+
+                // list input delegation
+                this.textsList.addEventListener('input', (ev) => {
+                    const el = ev.target;
+                    const parent = el.closest('.text-item');
+                    if (!parent) return;
+                    const id = Number(parent.dataset.id);
+                    const t = this.texts.find(x => x.id === id);
+                    if (!t) return;
+                    const field = el.dataset.field;
+                    if (field === 'text') { t.text = el.value; }
+                    else if (field === 'fontSize') { t.fontSize = Math.max(8, Math.min(400, Number(el.value) || 36)); }
+                    else if (field === 'fontFamily') { t.fontFamily = el.value; }
+                    else if (field === 'color') { t.color = el.value; }
+                    else if (field === 'x') { t.x = Math.max(0, Math.min(this.canvas.clientWidth, Number(el.value) || 0)); }
+                    else if (field === 'y') { t.y = Math.max(0, Math.min(this.canvas.clientHeight, Number(el.value) || 0)); }
+                    this.updateCanvas();
+                    this.debouncedSave();
+                });
+
+                // clicks in texts list (center/remove)
+                this.textsList.addEventListener('click', (ev) => {
+                    const btn = ev.target.closest('button');
+                    if (!btn) return;
+                    const item = btn.closest('.text-item');
+                    const id = Number(item.dataset.id);
+                    const idx = this.texts.findIndex(x => x.id === id);
+                    if (btn.dataset.action === 'remove') {
+                        if (idx >= 0) { this.texts.splice(idx, 1); this.renderTextList(); this.updateCanvas(); this.saveHistory(); }
+                    } else if (btn.dataset.action === 'center') {
+                        if (idx >= 0) { this.texts[idx].x = this.canvas.clientWidth / 2; this.texts[idx].y = this.canvas.clientHeight / 2; this.updateCanvas(); this.saveHistory(); }
+                    }
+                });
+
+                // add text
+                this.addTextBtn.addEventListener('click', () => {
+                    const custom = prompt('İçerik:', 'Ben Bir Muzum');
+                    if (custom !== null && custom !== undefined) {
+                        this.addNewText({ text: custom });
+                        this.saveHistory();
+                    }
+                });
+
+                // apply dims
+                this.applyDimsBtn.addEventListener('click', () => {
+                    const w = Math.max(50, Math.min(3000, Number(this.manualWidth.value) || 800));
+                    const h = Math.max(30, Math.min(3000, Number(this.manualHeight.value) || 450));
+                    const prevW = this.canvas.clientWidth || Number(this.manualWidth.value);
+                    const prevH = this.canvas.clientHeight || Number(this.manualHeight.value);
+                    const rels = this.texts.map(t => ({ x: t.x / prevW, y: t.y / prevH }));
+                    this.resizeCanvasForDPR(w, h);
+                    this.texts.forEach((t, i) => { t.x = Math.round(Math.max(0, Math.min(w, rels[i].x * w || w / 2))); t.y = Math.round(Math.max(0, Math.min(h, rels[i].y * h || h / 2))); });
+                    this.updateCanvas();
+                    this.saveHistory();
+                });
+
+                // bg color change
+                this.bgColorInput.addEventListener('input', (ev) => {
+                    this.bgColor = ev.target.value;
+                    this.updateCanvas();
+                    this.debouncedSave();
+                });
+
+                // undo/redo
+                this.undoBtn.addEventListener('click', () => this.undo());
+                this.redoBtn.addEventListener('click', () => this.redo());
+
+                // copy export
+                this.copyAllBtn.addEventListener('click', async () => {
+                    const txt = this.exportBox.textContent;
+                    try {
+                        await navigator.clipboard.writeText(txt);
+                        this.copyFeedback.style.display = 'block';
+                        setTimeout(() => this.copyFeedback.style.display = 'none', 1500);
+                    } catch (e) {
+                        const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+                        try { document.execCommand('copy'); this.copyFeedback.style.display = 'block'; setTimeout(() => this.copyFeedback.style.display = 'none', 1500); } catch (e2) { alert('Kopyalama başarısız.'); }
+                        document.body.removeChild(ta);
+                    }
+                });
+
+                // download PNG (use CSS size)
+                this.downloadPngBtn.addEventListener('click', () => {
+                    const cssW = this.canvas.clientWidth || Number(this.manualWidth.value);
+                    const cssH = this.canvas.clientHeight || Number(this.manualHeight.value);
+                    // create temp canvas with same DPI-backed image
+                    // we can use existing canvas.toDataURL (already DPI scaled) but ensure CSS size mapping ok
+                    const link = document.createElement('a');
+                    link.download = 'canvas-text.png';
+                    link.href = this.canvas.toDataURL('image/png');
+                    link.click();
+                });
+
+
+                // foto ekleme
+                this.applyBgImageBtn.addEventListener('click', () => {
+                    const file = this.bgImageInput.files[0];
+                    if (!file) return alert('Lütfen bir resim seçin.');
+
+                    const img = new Image();
+                    img.onload = () => {
+                        this.bgImage = img;
+                        this.updateCanvas();
+                        this.saveHistory();
+                    };
+                    img.onerror = () => alert('Resim yüklenemedi.');
+                    img.src = URL.createObjectURL(file);
+                });
+
+            }
+
+            /* ---------- text management ---------- */
+            addNewText(custom = {}) {
+                const idx = this.texts.length;
+                const w = this.canvas.clientWidth || Number(this.manualWidth.value);
+                const h = this.canvas.clientHeight || Number(this.manualHeight.value);
+                const t = {
+                    id: this.nextId++,
+                    text: custom.text ?? `Ben Bir Muzum ${idx + 1}`,
+                    x: custom.x ?? Math.round(w / 2),
+                    y: custom.y ?? Math.round(h / 2) + idx * 30,
+                    fontSize: custom.fontSize ?? 36,
+                    color: '#ffffff' ?? this.defaultDarkColor(idx),
+                    fontFamily: custom.fontFamily ?? 'Roboto'
+                };
+                this.texts.push(t);
+                this.renderTextList();
+                this.updateCanvas();
+            }
+
+            addInitialTexts() {
+                // ONLY one initial text now (Başlık, siyah)
+                this.addNewText({ text: 'Ben Bir Muzum', fontSize: 56, color: '#ffffff' });
+            }
+
+            /* ---------- font load wait ---------- */
+            waitForFontsThenRender() {
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => {
+                        // ensure canvas is resized to current manual inputs too
+                        const w = Number(this.manualWidth.value) || 800;
+                        const h = Number(this.manualHeight.value) || 450;
+                        this.resizeCanvasForDPR(w, h);
+                        this.updateCanvas();
+                    }).catch(() => { /* ignore */ });
+                } else {
+                    // fallback; still ensure canvas size
+                    const w = Number(this.manualWidth.value) || 800;
+                    const h = Number(this.manualHeight.value) || 450;
+                    this.resizeCanvasForDPR(w, h);
+                    this.updateCanvas();
+                }
+            }
+
+
+        }
+
+        /* ---------- instantiate ---------- */
+        const editor = new CanvasTextEditor();
+
+    </script>
+</body>
+
+</html>
